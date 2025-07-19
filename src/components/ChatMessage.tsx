@@ -1,6 +1,7 @@
 import { Message } from '@/hooks/useWebLLM';
 import { Bot, User } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import ReactMarkdown from 'react-markdown';
 
 interface ChatMessageProps {
   message: Message;
@@ -33,7 +34,9 @@ export function ChatMessage({ message }: ChatMessageProps) {
             ? 'bg-chat-message-user text-chat-message-user-foreground rounded-br-none' 
             : 'bg-chat-message-ai text-chat-message-ai-foreground rounded-bl-none'
         )}>
-          <p className="whitespace-pre-wrap text-sm">{message.content}</p>
+          <div className="text-sm prose prose-sm max-w-none dark:prose-invert">
+            <ReactMarkdown>{message.content}</ReactMarkdown>
+          </div>
         </div>
         <p className="text-xs text-muted-foreground">
           {message.timestamp.toLocaleTimeString()}
