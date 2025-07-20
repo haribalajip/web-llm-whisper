@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Send } from 'lucide-react';
@@ -10,12 +10,14 @@ interface ChatInputProps {
 
 export function ChatInput({ onSendMessage, disabled }: ChatInputProps) {
   const [input, setInput] = useState('');
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (input.trim() && !disabled) {
       onSendMessage(input.trim());
       setInput('');
+      textareaRef.current?.focus();
     }
   };
 
@@ -25,6 +27,7 @@ export function ChatInput({ onSendMessage, disabled }: ChatInputProps) {
       if (input.trim() && !disabled) {
         onSendMessage(input.trim());
         setInput('');
+        textareaRef.current?.focus();
       }
     }
   };
@@ -33,6 +36,7 @@ export function ChatInput({ onSendMessage, disabled }: ChatInputProps) {
     <form onSubmit={handleSubmit} className="p-4 border-t border-chat-border bg-background">
       <div className="flex gap-2">
         <Textarea
+          ref={textareaRef}
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
