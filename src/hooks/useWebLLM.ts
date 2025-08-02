@@ -33,7 +33,7 @@ export function useWebLLM(): UseWebLLMReturn {
     setInitProgress('Initializing WebLLM engine...');
     
     try {
-      const engine = await CreateMLCEngine('Llama-3.2-1B-Instruct-q4f16_1-MLC', {
+      const engine = await CreateMLCEngine('Qwen2.5-Coder-1.5B-Instruct-q4f16_1-MLC', {
         initProgressCallback: (report) => {
           setInitProgress(report.text);
         }
