@@ -16,6 +16,7 @@ export interface UseWebLLMReturn {
   sendMessage: (content: string) => Promise<void>;
   initializeEngine: () => Promise<void>;
   isEngineReady: boolean;
+  modelName: string;
 }
 
 export function useWebLLM(): UseWebLLMReturn {
@@ -25,6 +26,7 @@ export function useWebLLM(): UseWebLLMReturn {
   const [initProgress, setInitProgress] = useState('');
   const [isEngineReady, setIsEngineReady] = useState(false);
   const engineRef = useRef<MLCEngine | null>(null);
+  const modelName = 'Qwen2.5-Coder-1.5B-Instruct';
 
   const initializeEngine = async () => {
     if (engineRef.current) return;
@@ -121,6 +123,7 @@ export function useWebLLM(): UseWebLLMReturn {
     initProgress,
     sendMessage,
     initializeEngine,
-    isEngineReady
+    isEngineReady,
+    modelName
   };
 }

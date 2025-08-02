@@ -15,7 +15,8 @@ export function WebLLMChat() {
     initProgress,
     sendMessage,
     initializeEngine,
-    isEngineReady
+    isEngineReady,
+    modelName
   } = useWebLLM();
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -63,11 +64,14 @@ export function WebLLMChat() {
     <div className="min-h-screen bg-chat-surface flex flex-col">
       {/* Header */}
       <div className="bg-background border-b border-chat-border p-4">
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Bot className="w-6 h-6 text-chat-primary" />
           <h1 className="text-lg font-semibold">WebLLM Chat</h1>
           <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded-full">
             Local AI
+          </span>
+          <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
+            {modelName}
           </span>
         </div>
       </div>
