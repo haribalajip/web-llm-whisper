@@ -64,7 +64,17 @@ export function useWebLLM(): UseWebLLMReturn {
     setIsLoading(true);
 
     try {
-      const response = await engineRef.current.chat.completions.create({
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: '',
+        timestamp: new Date()
+      };
+
+      // Add empty assistant message that we'll update with streaming content
+      setMessages(prev => [...prev, assistantMessage]);
+
+      const stream = await engineRef.current.chat.completions.create({
         messages: [
           { role: 'system', content: 'You are a helpful AI assistant.' },
           ...messages.map(msg => ({ role: msg.role, content: msg.content })),
@@ -72,16 +82,24 @@ export function useWebLLM(): UseWebLLMReturn {
         ],
         temperature: 0.7,
         max_tokens: 512,
+        stream: true,
       });
 
-      const assistantMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'assistant',
-        content: response.choices[0]?.message?.content || 'Sorry, I could not generate a response.',
-        timestamp: new Date()
-      };
-
-      setMessages(prev => [...prev, assistantMessage]);
+      let fullContent = '';
+      for await (const chunk of stream) {
+        const delta = chunk.choices[0]?.delta?.content;
+        if (delta) {
+          fullContent += delta;
+          // Update the assistant message with accumulated content
+          setMessages(prev => 
+            prev.map(msg => 
+              msg.id === assistantMessage.id 
+                ? { ...msg, content: fullContent }
+                : msg
+            )
+          );
+        }
+      }
     } catch (error) {
       console.error('Error sending message:', error);
       const errorMessage: Message = {
