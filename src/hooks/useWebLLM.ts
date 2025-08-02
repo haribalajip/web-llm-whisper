@@ -14,10 +14,18 @@ export interface UseWebLLMReturn {
   isInitializing: boolean;
   initProgress: string;
   sendMessage: (content: string) => Promise<void>;
-  initializeEngine: () => Promise<void>;
+  initializeEngine: (modelId: string) => Promise<void>;
   isEngineReady: boolean;
   modelName: string;
+  selectedModel: string | null;
+  setSelectedModel: (modelId: string) => void;
 }
+
+const modelConfigs = {
+  'Llama-3.2-1B-Instruct-q4f16_1-MLC': 'Llama-3.2-1B-Instruct',
+  'Qwen2.5-Coder-1.5B-Instruct-q4f16_1-MLC': 'Qwen2.5-Coder-1.5B-Instruct', 
+  'Qwen2.5-Coder-7B-Instruct-q4f32_1-MLC': 'Qwen2.5-Coder-7B-Instruct'
+};
 
 export function useWebLLM(): UseWebLLMReturn {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -25,17 +33,17 @@ export function useWebLLM(): UseWebLLMReturn {
   const [isInitializing, setIsInitializing] = useState(false);
   const [initProgress, setInitProgress] = useState('');
   const [isEngineReady, setIsEngineReady] = useState(false);
+  const [selectedModel, setSelectedModel] = useState<string | null>(null);
   const engineRef = useRef<MLCEngine | null>(null);
-  const modelName = 'Qwen2.5-Coder-1.5B-Instruct';
 
-  const initializeEngine = async () => {
+  const initializeEngine = async (modelId: string) => {
     if (engineRef.current) return;
     
     setIsInitializing(true);
     setInitProgress('Initializing WebLLM engine...');
     
     try {
-      const engine = await CreateMLCEngine('Qwen2.5-Coder-1.5B-Instruct-q4f16_1-MLC', {
+      const engine = await CreateMLCEngine(modelId, {
         initProgressCallback: (report) => {
           setInitProgress(report.text);
         }
@@ -116,6 +124,8 @@ export function useWebLLM(): UseWebLLMReturn {
     }
   };
 
+  const modelName = selectedModel ? modelConfigs[selectedModel as keyof typeof modelConfigs] : '';
+
   return {
     messages,
     isLoading,
@@ -124,6 +134,8 @@ export function useWebLLM(): UseWebLLMReturn {
     sendMessage,
     initializeEngine,
     isEngineReady,
-    modelName
+    modelName,
+    selectedModel,
+    setSelectedModel
   };
 }

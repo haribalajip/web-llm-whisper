@@ -5,7 +5,15 @@ import { ChatInput } from './ChatInput';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label } from '@/components/ui/label';
 import { Bot, Loader2 } from 'lucide-react';
+
+const models = [
+  { id: 'Llama-3.2-1B-Instruct-q4f16_1-MLC', name: 'Llama-3.2-1B-Instruct', size: '1B' },
+  { id: 'Qwen2.5-Coder-1.5B-Instruct-q4f16_1-MLC', name: 'Qwen2.5-Coder-1.5B-Instruct', size: '1.5B' },
+  { id: 'Qwen2.5-Coder-7B-Instruct-q4f32_1-MLC', name: 'Qwen2.5-Coder-7B-Instruct', size: '7B' }
+];
 
 export function WebLLMChat() {
   const {
@@ -16,7 +24,9 @@ export function WebLLMChat() {
     sendMessage,
     initializeEngine,
     isEngineReady,
-    modelName
+    modelName,
+    selectedModel,
+    setSelectedModel
   } = useWebLLM();
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -24,6 +34,41 @@ export function WebLLMChat() {
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
+
+  // Model selection screen
+  if (!selectedModel) {
+    return (
+      <div className="min-h-screen bg-chat-surface flex items-center justify-center p-4">
+        <Card className="w-full max-w-lg p-6">
+          <Bot className="w-16 h-16 mx-auto mb-4 text-chat-primary" />
+          <h1 className="text-2xl font-bold mb-2 text-center">Choose AI Model</h1>
+          <p className="text-muted-foreground mb-6 text-center">
+            Select a model to start chatting. All models run locally in your browser.
+          </p>
+          
+          <RadioGroup value={selectedModel || ''} onValueChange={setSelectedModel} className="space-y-4">
+            {models.map((model) => (
+              <div key={model.id} className="flex items-center space-x-3 p-3 rounded-lg border hover:bg-muted/50">
+                <RadioGroupItem value={model.id} id={model.id} />
+                <Label htmlFor={model.id} className="flex-1 cursor-pointer">
+                  <div className="font-medium">{model.name}</div>
+                  <div className="text-sm text-muted-foreground">Size: {model.size}</div>
+                </Label>
+              </div>
+            ))}
+          </RadioGroup>
+          
+          <Button 
+            onClick={() => selectedModel && initializeEngine(selectedModel)} 
+            disabled={!selectedModel}
+            className="w-full mt-6"
+          >
+            Initialize Selected Model
+          </Button>
+        </Card>
+      </div>
+    );
+  }
 
   if (!isEngineReady && !isInitializing) {
     return (
@@ -37,7 +82,7 @@ export function WebLLMChat() {
           <p className="text-sm text-muted-foreground mb-4">
             No data is sent to external servers. Everything runs locally.
           </p>
-          <Button onClick={initializeEngine} className="w-full">
+          <Button onClick={() => selectedModel && initializeEngine(selectedModel)} className="w-full">
             Initialize Chat
           </Button>
         </Card>
