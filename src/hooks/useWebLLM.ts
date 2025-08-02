@@ -19,6 +19,7 @@ export interface UseWebLLMReturn {
   modelName: string;
   selectedModel: string | null;
   setSelectedModel: (modelId: string) => void;
+  resetEngine: () => void;
 }
 
 const modelConfigs = {
@@ -124,6 +125,15 @@ export function useWebLLM(): UseWebLLMReturn {
     }
   };
 
+  const resetEngine = () => {
+    engineRef.current = null;
+    setIsEngineReady(false);
+    setIsInitializing(false);
+    setInitProgress('');
+    setMessages([]);
+    setSelectedModel(null);
+  };
+
   const modelName = selectedModel ? modelConfigs[selectedModel as keyof typeof modelConfigs] : '';
 
   return {
@@ -136,6 +146,7 @@ export function useWebLLM(): UseWebLLMReturn {
     isEngineReady,
     modelName,
     selectedModel,
-    setSelectedModel
+    setSelectedModel,
+    resetEngine
   };
 }
