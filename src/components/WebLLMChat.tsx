@@ -64,7 +64,7 @@ export function WebLLMChat() {
             disabled={!selectedModel}
             className="w-full mt-6"
           >
-            Initialize Selected Model
+            Start Chatting
           </Button>
         </Card>
       </div>
@@ -107,9 +107,9 @@ export function WebLLMChat() {
   }
 
   return (
-    <div className="min-h-screen bg-chat-surface flex flex-col">
+    <div className="h-screen bg-chat-surface flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="bg-background border-b border-chat-border p-4">
+      <div className="bg-background border-b border-chat-border p-4 flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2 flex-wrap">
             <Bot className="w-6 h-6 text-chat-primary" />
@@ -134,7 +134,7 @@ export function WebLLMChat() {
       </div>
 
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto min-h-0">
         {messages.length === 0 && (
           <div className="flex items-center justify-center h-full p-8">
             <div className="text-center">
@@ -170,11 +170,13 @@ export function WebLLMChat() {
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
-      <ChatInput 
-        onSendMessage={sendMessage} 
-        disabled={isLoading || !isEngineReady}
-      />
+      {/* Input - Fixed at bottom */}
+      <div className="flex-shrink-0">
+        <ChatInput 
+          onSendMessage={sendMessage} 
+          disabled={isLoading || !isEngineReady}
+        />
+      </div>
     </div>
   );
 }
