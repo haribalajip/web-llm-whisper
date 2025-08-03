@@ -12,8 +12,8 @@ All colors MUST be HSL.
   --chat-primary-foreground: 210 40% 98%;
   --chat-surface: 0 0% 98%;
   --chat-surface-dark: 222.2 84% 4.9%;
-  --chat-message-user: 221.2 83.2% 53.3%;
-  --chat-message-user-foreground: 210 40% 98%;
+  --chat-message-user: 210 40% 98%;
+  --chat-message-user-foreground: 222.2 84% 4.9%;
   --chat-message-ai: 210 40% 96.1%;
   --chat-message-ai-foreground: 222.2 84% 4.9%;
   --chat-border: 214.3 31.8% 91.4%;
