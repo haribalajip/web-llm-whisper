@@ -34,13 +34,7 @@ export function useWebLLM(): UseWebLLMReturn {
   const [isInitializing, setIsInitializing] = useState(false);
   const [initProgress, setInitProgress] = useState('');
   const [isEngineReady, setIsEngineReady] = useState(false);
-  const [selectedModel, setSelectedModel] = useState<string | null>(() => {
-    // Load saved model from localStorage
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('webllm-selected-model');
-    }
-    return null;
-  });
+  const [selectedModel, setSelectedModel] = useState<string | null>(null);
   const engineRef = useRef<MLCEngine | null>(null);
 
   const initializeEngine = async (modelId: string) => {
@@ -138,21 +132,9 @@ export function useWebLLM(): UseWebLLMReturn {
     setInitProgress('');
     setMessages([]);
     setSelectedModel(null);
-    // Clear from localStorage
-    if (typeof window !== 'undefined') {
-      localStorage.removeItem('webllm-selected-model');
-    }
   };
 
   const modelName = selectedModel ? modelConfigs[selectedModel as keyof typeof modelConfigs] : '';
-
-  const handleSetSelectedModel = (modelId: string) => {
-    setSelectedModel(modelId);
-    // Save to localStorage
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('webllm-selected-model', modelId);
-    }
-  };
 
   return {
     messages,
@@ -164,7 +146,7 @@ export function useWebLLM(): UseWebLLMReturn {
     isEngineReady,
     modelName,
     selectedModel,
-    setSelectedModel: handleSetSelectedModel,
+    setSelectedModel,
     resetEngine
   };
 }
