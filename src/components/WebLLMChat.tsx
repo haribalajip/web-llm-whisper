@@ -39,8 +39,8 @@ export function WebLLMChat() {
   // Model selection screen
   if (!selectedModel) {
     return (
-      <div className="min-h-screen bg-chat-surface flex items-center justify-center p-4">
-        <Card className="w-full max-w-lg p-6">
+      <div className="min-h-screen bg-gradient-primary flex items-center justify-center p-4">
+        <Card className="w-full max-w-lg p-6 bg-white/10 backdrop-blur-md border-white/20">
           <Bot className="w-16 h-16 mx-auto mb-4 text-chat-primary" />
           <h1 className="text-2xl font-bold mb-2 text-center">Choose AI Model</h1>
           <p className="text-muted-foreground mb-6 text-center">
