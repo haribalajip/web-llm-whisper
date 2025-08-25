@@ -30,7 +30,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
   return (
     <div className={cn(
       'flex gap-3 p-4',
-      isUser ? 'flex-row-reverse bg-chat-surface' : 'bg-background'
+      isUser ? 'flex-row-reverse border-r-2 border-primary/20' : 'border-l-2 border-muted-foreground/20'
     )}>
       <div className={cn(
         'flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center',
