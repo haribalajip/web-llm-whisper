@@ -1,7 +1,7 @@
-import { WebLLMChat } from '@/components/WebLLMChat';
+import { SimpleWebLLMChat } from '@/components/SimpleWebLLMChat';
 
 const Index = () => {
-  return <WebLLMChat />;
+  return <SimpleWebLLMChat />;
 };
 
 export default Index;
