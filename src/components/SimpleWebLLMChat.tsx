@@ -1,10 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { 
-  AssistantRuntimeProvider, 
-  useExternalStoreRuntime,
-  ThreadMessageLike,
-  AppendMessage 
-} from '@assistant-ui/react';
+import { ThreadMessageLike } from '@assistant-ui/react';
 import { createWebLLMStore } from '@/lib/webllm-runtime';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,96 +15,6 @@ const models = [
   { id: 'Qwen2.5-1.5B-Instruct-q4f32_1-MLC', name: 'Qwen2.5 1.5B', size: '1.0GB' },
   { id: 'Qwen2.5-0.5B-Instruct-q4f32_1-MLC', name: 'Qwen2.5 0.5B', size: '0.4GB' },
 ];
-
-function WebLLMRuntimeProvider({ children }: { children: React.ReactNode }) {
-  const [messages, setMessages] = useState<ThreadMessageLike[]>([]);
-  const [isRunning, setIsRunning] = useState(false);
-  const webllmStore = useRef(createWebLLMStore()).current;
-
-  const onNew = async (message: AppendMessage) => {
-    if (message.content[0]?.type !== "text") {
-      throw new Error("Only text messages are supported");
-    }
-
-    const input = message.content[0].text;
-    
-    // Add user message
-    const userMessage: ThreadMessageLike = {
-      role: "user",
-      content: [{ type: "text", text: input }],
-      id: `user-${Date.now()}`,
-      createdAt: new Date(),
-    };
-    setMessages(prev => [...prev, userMessage]);
-
-    if (!webllmStore.engine) {
-      throw new Error("WebLLM engine not initialized");
-    }
-
-    setIsRunning(true);
-
-    try {
-      // Start with empty assistant message
-      const assistantMessageId = `assistant-${Date.now()}`;
-      let assistantContent = '';
-      
-      setMessages(prev => [...prev, {
-        role: "assistant",
-        content: [{ type: "text", text: "" }],
-        id: assistantMessageId,
-        createdAt: new Date(),
-      }]);
-
-      // Create completion stream
-      const messageHistory: Array<{role: 'user' | 'assistant', content: string}> = [
-        ...messages.map(m => ({
-          role: m.role as 'user' | 'assistant',
-          content: Array.isArray(m.content) 
-            ? m.content.map(c => c.type === 'text' ? c.text : '').join('')
-            : String(m.content)
-        })),
-        { role: 'user' as const, content: input }
-      ];
-
-      const completion = await webllmStore.engine.chat.completions.create({
-        messages: messageHistory,
-        stream: true,
-        temperature: 0.7,
-        max_tokens: 2048,
-      });
-
-      // Stream the response
-      for await (const chunk of completion) {
-        const delta = chunk.choices[0]?.delta?.content;
-        if (delta) {
-          assistantContent += delta;
-          setMessages(prev => prev.map(msg => 
-            msg.id === assistantMessageId 
-              ? { ...msg, content: [{ type: "text", text: assistantContent }] }
-              : msg
-          ));
-        }
-      }
-    } catch (error) {
-      console.error('Error generating response:', error);
-    } finally {
-      setIsRunning(false);
-    }
-  };
-
-  const runtime = useExternalStoreRuntime({
-    messages,
-    isRunning,
-    onNew,
-    convertMessage: (message: ThreadMessageLike) => message,
-  });
-
-  return (
-    <AssistantRuntimeProvider runtime={runtime}>
-      {children}
-    </AssistantRuntimeProvider>
-  );
-}
 
 // Simple message display
 function MessageDisplay({ messages }: { messages: ThreadMessageLike[] }) {
@@ -164,6 +69,85 @@ function ChatInput({ onSendMessage }: { onSendMessage: (message: string) => void
         </Button>
       </div>
     </form>
+  );
+}
+
+function WebLLMChatInterface() {
+  const [messages, setMessages] = useState<ThreadMessageLike[]>([]);
+  const [isRunning, setIsRunning] = useState(false);
+  const webllmStore = useRef(createWebLLMStore()).current;
+
+  const handleSendMessage = async (message: string) => {
+    // Create a user message
+    const userMessage: ThreadMessageLike = {
+      role: "user",
+      content: [{ type: "text", text: message }],
+      id: `user-${Date.now()}`,
+      createdAt: new Date(),
+    };
+    
+    setMessages(prev => [...prev, userMessage]);
+    
+    if (!webllmStore.engine) {
+      return;
+    }
+
+    setIsRunning(true);
+
+    try {
+      // Start with empty assistant message
+      const assistantMessageId = `assistant-${Date.now()}`;
+      let assistantContent = '';
+      
+      setMessages(prev => [...prev, {
+        role: "assistant",
+        content: [{ type: "text", text: "" }],
+        id: assistantMessageId,
+        createdAt: new Date(),
+      }]);
+
+      // Create completion stream
+      const messageHistory: Array<{role: 'user' | 'assistant', content: string}> = [
+        ...messages.map(m => ({
+          role: m.role as 'user' | 'assistant',
+          content: Array.isArray(m.content) 
+            ? m.content.map(c => c.type === 'text' ? c.text : '').join('')
+            : String(m.content)
+        })),
+        { role: 'user' as const, content: message }
+      ];
+
+      const completion = await webllmStore.engine.chat.completions.create({
+        messages: messageHistory,
+        stream: true,
+        temperature: 0.7,
+        max_tokens: 2048,
+      });
+
+      // Stream the response
+      for await (const chunk of completion) {
+        const delta = chunk.choices[0]?.delta?.content;
+        if (delta) {
+          assistantContent += delta;
+          setMessages(prev => prev.map(msg => 
+            msg.id === assistantMessageId 
+              ? { ...msg, content: [{ type: "text", text: assistantContent }] }
+              : msg
+          ));
+        }
+      }
+    } catch (error) {
+      console.error('Error generating response:', error);
+    } finally {
+      setIsRunning(false);
+    }
+  };
+
+  return (
+    <>
+      <MessageDisplay messages={messages} />
+      <ChatInput onSendMessage={handleSendMessage} />
+    </>
   );
 }
 
@@ -279,24 +263,21 @@ export function SimpleWebLLMChat() {
 
   // Show chat interface
   return (
-    <WebLLMRuntimeProvider>
-      <div className="flex flex-col h-screen">
-        <header className="border-b p-4 flex justify-between items-center">
-          <div>
-            <h1 className="text-xl font-semibold">WebLLM Chat</h1>
-            <p className="text-sm text-muted-foreground">
-              Running {models.find(m => m.id === initState.selectedModel)?.name} locally
-            </p>
-          </div>
-          <Button variant="outline" size="sm" onClick={handleChangeModel}>
-            <Settings className="h-4 w-4 mr-2" />
-            Change Model
-          </Button>
-        </header>
-        
-        <MessageDisplay messages={[]} />
-        <ChatInput onSendMessage={() => {}} />
-      </div>
-    </WebLLMRuntimeProvider>
+    <div className="flex flex-col h-screen">
+      <header className="border-b p-4 flex justify-between items-center">
+        <div>
+          <h1 className="text-xl font-semibold">WebLLM Chat</h1>
+          <p className="text-sm text-muted-foreground">
+            Running {models.find(m => m.id === initState.selectedModel)?.name} locally
+          </p>
+        </div>
+        <Button variant="outline" size="sm" onClick={handleChangeModel}>
+          <Settings className="h-4 w-4 mr-2" />
+          Change Model
+        </Button>
+      </header>
+      
+      <WebLLMChatInterface />
+    </div>
   );
 }
