@@ -130,6 +130,13 @@ function MessageDisplay({ messages }: { messages: ThreadMessageLike[] }) {
               {Array.isArray(message.content) 
                 ? message.content.map(c => c.type === 'text' ? c.text : '').join('')
                 : String(message.content)}
+            </div>
+          </div>
+        ))
+      )}
+    </div>
+  );
+}
 
 function ChatInput({ onSendMessage }: { onSendMessage: (message: string) => void }) {
   const [input, setInput] = useState('');
@@ -157,13 +164,6 @@ function ChatInput({ onSendMessage }: { onSendMessage: (message: string) => void
         </Button>
       </div>
     </form>
-  );
-}
-            </div>
-          </div>
-        ))
-      )}
-    </div>
   );
 }
 
